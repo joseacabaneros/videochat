@@ -1,0 +1,5 @@
+node_modules/
+bower_components/
+.env
+videochat.iml
+.idea/
