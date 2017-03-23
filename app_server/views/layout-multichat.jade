@@ -19,12 +19,16 @@ block content-common
                         .panel-heading
                             ul.nav.nav-tabs.nav-justified
                                 li.active
+                                    a(href='#radio' data-toggle='tab') #{layoutMultichat.radio}
+                                li
                                     a(href='#video' data-toggle='tab') #{layoutMultichat.video}
                                 li
                                     a(href='#audio' data-toggle='tab') #{layoutMultichat.audio}
                         .panel-body
                             .tab-content
-                                .tab-pane.fade.in.active#video
+                                .tab-pane.fade.in.active#radio
+                                    block radio
+                                .tab-pane.fade#video
                                     block video
                                 .tab-pane.fade#audio
                                     block audio

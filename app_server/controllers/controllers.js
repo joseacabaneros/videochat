@@ -193,6 +193,7 @@ var layoutMultichat = {
     messages: 'Messages',
     people: 'People',
     presentations: 'Presentations',
+    radio: 'Radio Shoutcast',
     audio: 'Audio broadcast',
     video: 'Video broadcast',
     videoconferences: 'Videoconferences'
@@ -202,6 +203,7 @@ module.exports.multichat = function (req, res, next) {
     res.render('multichat', {
         authenticated: true,
         config: {
+            radioUrl: config.radioUrl,
             videoUrl: config.videoUrl,
             audioUrl: config.audioUrl,
             presentationUrl: config.presentationUrl

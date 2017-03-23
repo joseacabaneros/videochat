@@ -403,6 +403,25 @@ angular.module('multichatApp')
         };
     }]);
 angular.module('multichatApp')
+    .config(['growlProvider', function (growlProvider) {
+        growlProvider.globalPosition('bottom-right');
+        growlProvider.globalTimeToLive(2000);
+    }]);
+
+angular.module('multichatApp')
+    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
+        dropzoneOpsProvider.setOptions({
+            url: '/',
+            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
+        });
+    }]);
+
+//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
+angular.module('multichatApp')
+    .config(['$compileProvider', function ($compileProvider) {
+        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
+    }]);
+angular.module('multichatApp')
     .filter("emojis", ["$sce", function ($sce) {
         var space = / /g;
         var line = /\n/g;
@@ -461,25 +480,6 @@ angular.module('multichatApp')
         };
     }]);
 angular.module('multichatApp')
-    .config(['growlProvider', function (growlProvider) {
-        growlProvider.globalPosition('bottom-right');
-        growlProvider.globalTimeToLive(2000);
-    }]);
-
-angular.module('multichatApp')
-    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
-        dropzoneOpsProvider.setOptions({
-            url: '/',
-            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
-        });
-    }]);
-
-//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
-angular.module('multichatApp')
-    .config(['$compileProvider', function ($compileProvider) {
-        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
-    }]);
-angular.module('multichatApp')
     .service('utils', function () {
         function isJson(str) {
             try {
@@ -505,6 +505,7 @@ angular.module('multichatApp')
         var peopleManagement = new PeopleManagement(ws, growl);
         var messagesManagement = new MessagesManagement(ws, growl);
         var geolocationManagement = new GeolocationManagement(ws, growl);
+        var radioManagement = new RadioManagement(ws, growl);
         var videoManagement = new VideoManagement(ws, growl);
         var audioManagement = new AudioManagement(ws, growl);
         var videoconferenceManagement = new VideoconferenceManagement(ws, growl);
@@ -574,6 +575,7 @@ angular.module('multichatApp')
             ws: ws,
             peopleManagement: peopleManagement,
             messagesManagement: messagesManagement,
+            radioManagement: radioManagement,
             videoManagement: videoManagement,
             audioManagement: audioManagement,
             videoconferenceManagement: videoconferenceManagement,
@@ -984,6 +986,16 @@ function PresentationManagement(ws, growl) {
             }
         }));
     }
+}
+function RadioManagement(ws, growl) {
+    var radio = document.getElementById('radioId');
+    var source = document.getElementById('radioSource');
+
+    source.onerror = function () {
+        growl.error('The URL provided is not a valid radio', {
+            title: 'Error'
+        });
+    };
 }
 function VideoconferenceManagement(ws, growl) {
     var constraints = { //interested in video & audio

@@ -83,6 +83,10 @@ block messages
                     ng-model='$parent.comment' ng-keyup='checkEnter($event)')
                     button.btn.btn-primary(type=button ng-disabled="!$parent.comment"
                     ng-click='commentSent()') #{lang.send}
+block radio
+    .div
+        audio#radioId(controls width="100%" height="100%")
+            source#radioSource(src='#{config.radioUrl}')
 block video
     div(ng-controller='videoCtrl')
         input(type='checkbox' id='muteVideoCheckbox' ng-model='muteVideoModel'

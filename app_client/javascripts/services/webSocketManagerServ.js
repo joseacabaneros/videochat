@@ -10,6 +10,7 @@ angular.module('multichatApp')
         var peopleManagement = new PeopleManagement(ws, growl);
         var messagesManagement = new MessagesManagement(ws, growl);
         var geolocationManagement = new GeolocationManagement(ws, growl);
+        var radioManagement = new RadioManagement(ws, growl);
         var videoManagement = new VideoManagement(ws, growl);
         var audioManagement = new AudioManagement(ws, growl);
         var videoconferenceManagement = new VideoconferenceManagement(ws, growl);
@@ -79,6 +80,7 @@ angular.module('multichatApp')
             ws: ws,
             peopleManagement: peopleManagement,
             messagesManagement: messagesManagement,
+            radioManagement: radioManagement,
             videoManagement: videoManagement,
             audioManagement: audioManagement,
             videoconferenceManagement: videoconferenceManagement,
