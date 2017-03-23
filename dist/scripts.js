@@ -403,25 +403,6 @@ angular.module('multichatApp')
         };
     }]);
 angular.module('multichatApp')
-    .config(['growlProvider', function (growlProvider) {
-        growlProvider.globalPosition('bottom-right');
-        growlProvider.globalTimeToLive(2000);
-    }]);
-
-angular.module('multichatApp')
-    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
-        dropzoneOpsProvider.setOptions({
-            url: '/',
-            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
-        });
-    }]);
-
-//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
-angular.module('multichatApp')
-    .config(['$compileProvider', function ($compileProvider) {
-        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
-    }]);
-angular.module('multichatApp')
     .filter("emojis", ["$sce", function ($sce) {
         var space = / /g;
         var line = /\n/g;
@@ -480,6 +461,25 @@ angular.module('multichatApp')
         };
     }]);
 angular.module('multichatApp')
+    .config(['growlProvider', function (growlProvider) {
+        growlProvider.globalPosition('bottom-right');
+        growlProvider.globalTimeToLive(2000);
+    }]);
+
+angular.module('multichatApp')
+    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
+        dropzoneOpsProvider.setOptions({
+            url: '/',
+            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
+        });
+    }]);
+
+//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
+angular.module('multichatApp')
+    .config(['$compileProvider', function ($compileProvider) {
+        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
+    }]);
+angular.module('multichatApp')
     .service('utils', function () {
         function isJson(str) {
             try {
@@ -505,6 +505,7 @@ angular.module('multichatApp')
         var peopleManagement = new PeopleManagement(ws, growl);
         var messagesManagement = new MessagesManagement(ws, growl);
         var geolocationManagement = new GeolocationManagement(ws, growl);
+        var streamingManagement = new StreamingManagement(ws, growl);
         var radioManagement = new RadioManagement(ws, growl);
         var videoManagement = new VideoManagement(ws, growl);
         var audioManagement = new AudioManagement(ws, growl);
@@ -575,6 +576,7 @@ angular.module('multichatApp')
             ws: ws,
             peopleManagement: peopleManagement,
             messagesManagement: messagesManagement,
+            streamingManagement: streamingManagement,
             radioManagement: radioManagement,
             videoManagement: videoManagement,
             audioManagement: audioManagement,
@@ -993,6 +995,16 @@ function RadioManagement(ws, growl) {
 
     source.onerror = function () {
         growl.error('The URL provided is not a valid radio', {
+            title: 'Error'
+        });
+    };
+}
+function StreamingManagement(ws, growl) {
+    var streaming = document.getElementById('streamingId');
+    var source = document.getElementById('streamingSource');
+
+    source.onerror = function () {
+        growl.error('The URL provided is not a valid non-adaptative streaming video', {
             title: 'Error'
         });
     };

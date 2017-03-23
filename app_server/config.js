@@ -3,6 +3,9 @@ var config = {};
 //Heroku assigns the value through the PORT environment variable. You cannot choose
 config.port = process.env.HTTP_PORT || process.env.PORT || 3000;
 
+//Video streaming no adaptativo de nuestro servidor IIS
+config.streamingUrl = 'https://156.35.98.12:8443/video/something.mp4'; //https
+//config.streamingUrl = 'http://156.35.98.12:9999/video/something.mp4'; //http
 //Shoutcast emision http://156.35.98.12:8001/listen.pls
 config.radioUrl = 'http://156.35.98.12:8001/;';
 config.videoUrl = 'https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4';

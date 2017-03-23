@@ -19,6 +19,8 @@ block content-common
                         .panel-heading
                             ul.nav.nav-tabs.nav-justified
                                 li.active
+                                    a(href='#streaming' data-toggle='tab') #{layoutMultichat.streaming}
+                                li
                                     a(href='#radio' data-toggle='tab') #{layoutMultichat.radio}
                                 li
                                     a(href='#video' data-toggle='tab') #{layoutMultichat.video}
@@ -26,7 +28,9 @@ block content-common
                                     a(href='#audio' data-toggle='tab') #{layoutMultichat.audio}
                         .panel-body
                             .tab-content
-                                .tab-pane.fade.in.active#radio
+                                .tab-pane.fade.in.active#streaming
+                                    block streaming
+                                .tab-pane.fade#radio
                                     block radio
                                 .tab-pane.fade#video
                                     block video

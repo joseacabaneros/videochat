@@ -193,6 +193,7 @@ var layoutMultichat = {
     messages: 'Messages',
     people: 'People',
     presentations: 'Presentations',
+    streaming: "Non-adaptative Streaming",
     radio: 'Radio Shoutcast',
     audio: 'Audio broadcast',
     video: 'Video broadcast',
@@ -203,6 +204,7 @@ module.exports.multichat = function (req, res, next) {
     res.render('multichat', {
         authenticated: true,
         config: {
+            streamingUrl: config.streamingUrl,
             radioUrl: config.radioUrl,
             videoUrl: config.videoUrl,
             audioUrl: config.audioUrl,
