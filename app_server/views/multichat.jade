@@ -84,9 +84,15 @@ block messages
                     button.btn.btn-primary(type=button ng-disabled="!$parent.comment"
                     ng-click='commentSent()') #{lang.send}
 block streaming
-    .div
-        video#streamingId(controls width="100%" height="100%")
-            source#streamingSource(src='#{config.streamingUrl}')
+    div.panel.panel-default
+        div.panel-body
+            h4=lang.streamingNonAdaptative
+            video#streamingId(controls width="100%" height="100%")
+                source#streamingSource(src='#{config.streamingUrl}')
+    div.panel.panel-default
+        div.panel-body
+            h4=lang.streamingAdaptative
+            video#dashvideoId(controls width="100%" height="100%")
 block radio
     .div
         audio#radioId(controls width="100%" height="100%")

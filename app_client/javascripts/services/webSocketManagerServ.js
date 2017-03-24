@@ -11,6 +11,7 @@ angular.module('multichatApp')
         var messagesManagement = new MessagesManagement(ws, growl);
         var geolocationManagement = new GeolocationManagement(ws, growl);
         var streamingManagement = new StreamingManagement(ws, growl);
+        var dashvideoManagement = new DashvideoManagement();
         var radioManagement = new RadioManagement(ws, growl);
         var videoManagement = new VideoManagement(ws, growl);
         var audioManagement = new AudioManagement(ws, growl);
@@ -82,6 +83,7 @@ angular.module('multichatApp')
             peopleManagement: peopleManagement,
             messagesManagement: messagesManagement,
             streamingManagement: streamingManagement,
+            dashvideoManagement: dashvideoManagement,
             radioManagement: radioManagement,
             videoManagement: videoManagement,
             audioManagement: audioManagement,

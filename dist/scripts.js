@@ -461,25 +461,6 @@ angular.module('multichatApp')
         };
     }]);
 angular.module('multichatApp')
-    .config(['growlProvider', function (growlProvider) {
-        growlProvider.globalPosition('bottom-right');
-        growlProvider.globalTimeToLive(2000);
-    }]);
-
-angular.module('multichatApp')
-    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
-        dropzoneOpsProvider.setOptions({
-            url: '/',
-            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
-        });
-    }]);
-
-//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
-angular.module('multichatApp')
-    .config(['$compileProvider', function ($compileProvider) {
-        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
-    }]);
-angular.module('multichatApp')
     .service('utils', function () {
         function isJson(str) {
             try {
@@ -506,6 +487,7 @@ angular.module('multichatApp')
         var messagesManagement = new MessagesManagement(ws, growl);
         var geolocationManagement = new GeolocationManagement(ws, growl);
         var streamingManagement = new StreamingManagement(ws, growl);
+        var dashvideoManagement = new DashvideoManagement();
         var radioManagement = new RadioManagement(ws, growl);
         var videoManagement = new VideoManagement(ws, growl);
         var audioManagement = new AudioManagement(ws, growl);
@@ -577,6 +559,7 @@ angular.module('multichatApp')
             peopleManagement: peopleManagement,
             messagesManagement: messagesManagement,
             streamingManagement: streamingManagement,
+            dashvideoManagement: dashvideoManagement,
             radioManagement: radioManagement,
             videoManagement: videoManagement,
             audioManagement: audioManagement,
@@ -627,6 +610,16 @@ function AudioManagement(ws, growl) {
             }
         }));
     }
+}
+function DashvideoManagement() {
+    var video,context,player;
+    video = document.getElementById('dashvideoId');
+    context = new Webm.di.WebmContext();
+    player = new MediaPlayer(context);
+    player.startup();
+    player.attachView(video);
+    player.setAutoPlay(true);
+    player.attachSource(config.dashUrl); //url del mpd adaptativo
 }
 function DrawingManagement(ws) {
     var canvas = new fabric.Canvas('canvas');
@@ -1363,3 +1356,22 @@ function VideoManagement(ws, growl) {
         }));
     }
 }
+angular.module('multichatApp')
+    .config(['growlProvider', function (growlProvider) {
+        growlProvider.globalPosition('bottom-right');
+        growlProvider.globalTimeToLive(2000);
+    }]);
+
+angular.module('multichatApp')
+    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
+        dropzoneOpsProvider.setOptions({
+            url: '/',
+            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
+        });
+    }]);
+
+//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
+angular.module('multichatApp')
+    .config(['$compileProvider', function ($compileProvider) {
+        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
+    }]);
