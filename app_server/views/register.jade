@@ -50,13 +50,53 @@ block content-common
                         .glyphicon.glyphicon-warning-sign.form-control-feedback(
                         ng-show="form.name.$error.minlength || form.name.$error.maxlength")
 
+            .form-group(ng-class='((form.surname.$touched || form.$submitted) ' +
+            '&& form.surname.$invalid) ? "has-error has-feedback" : "has-feedback"')
+                label.control-label.col-sm-1(for='surname') #{lang.surname}:
+                .col-sm-2
+                    input.form-control(type='text' id='surname' name='surname'
+                    placeholder='#{lang.surnameEnter}' ng-model="register.surname"
+                    required ng-minlength='3' ng-maxlength='20')
+                    div(ng-show="form.surname.$valid")
+                        .glyphicon.glyphicon-ok.form-control-feedback
+                    div(ng-show="form.$submitted || form.surname.$touched")
+                        .text-danger(ng-show="form.surname.$error.required") #{lang.surnameRequired}
+                        .glyphicon.glyphicon-warning-sign.form-control-feedback(
+                        ng-show="form.surname.$error.required")
+                        .text-danger(ng-show="form.surname.$error.minlength " +
+                        "|| form.surname.$error.maxlength") #{lang.fieldSizeCheck}
+                        .glyphicon.glyphicon-warning-sign.form-control-feedback(
+                        ng-show="form.surname.$error.minlength || form.surname.$error.maxlength")
+
+            .form-group(ng-class='((form.email.$touched || form.$submitted) ' +
+            '&& form.email.$invalid) ? "has-error has-feedback" : "has-feedback"')
+                label.control-label.col-sm-1(for='email') #{lang.email}:
+                .col-sm-2
+                    input.form-control(type='email' id='email' name='email'
+                    placeholder='#{lang.emailEnter}' ng-model="register.email"
+                    required ng-minlength='3' ng-maxlength='20')
+                    div(ng-show="form.email.$valid")
+                        .glyphicon.glyphicon-ok.form-control-feedback
+                    div(ng-show="form.$submitted || form.email.$touched")
+                        .text-danger(ng-show="form.email.$error.required") #{lang.emailRequired}
+                        .glyphicon.glyphicon-warning-sign.form-control-feedback(
+                        ng-show="form.email.$error.required")
+                        .text-danger(ng-show="form.email.$error.minlength " +
+                        "|| form.email.$error.maxlength") #{lang.fieldSizeCheck}
+                        .glyphicon.glyphicon-warning-sign.form-control-feedback(
+                        ng-show="form.email.$error.minlength || form.email.$error.maxlength")
+                        .text-danger(ng-show="form.email.$error.email") #{lang.emailCheck}
+                        .glyphicon.glyphicon-warning-sign.form-control-feedback(
+                        ng-show="form.email.$error.email")
+
             .form-group(ng-class='((form.pwd.$touched || form.$submitted) ' +
             '&& form.pwd.$invalid) ? "has-error has-feedback" : "has-feedback"')
                 label.control-label.col-sm-1(for='pwd') #{lang.password}:
                 .col-sm-2
                     input.form-control(type='password' id='pwd' name='pwd'
                     placeholder='#{lang.passwordEnter}' ng-model="register.password"
-                    required ng-minlength='3' ng-maxlength='20')
+                    required
+                    ng-pattern=/^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])[A-Za-z\d$@$!%*#?&]{8,20}$/)
                     div(ng-show="form.pwd.$valid")
                         .glyphicon.glyphicon-ok.form-control-feedback
                     div(ng-show="form.$submitted || form.pwd.$touched")
@@ -64,10 +104,9 @@ block content-common
                         ng-show="form.pwd.$error.required") #{lang.passwordRequired}
                         .glyphicon.glyphicon-warning-sign.form-control-feedback(
                         ng-show="form.pwd.$error.required")
-                        .text-danger(ng-show="form.pwd.$error.minlength " +
-                        "|| form.pwd.$error.maxlength") #{lang.fieldSizeCheck}
+                        .text-danger(ng-show="form.pwd.$error.pattern") #{lang.fieldPatternCheck}
                         .glyphicon.glyphicon-warning-sign.form-control-feedback(
-                        ng-show="form.pwd.$error.minlength || form.pwd.$error.maxlength")
+                        ng-show="form.pwd.$error.pattern")
 
             .form-group(ng-class='((form.pwd2.$touched || form.$submitted) ' +
             '&& form.pwd2.$invalid) ? "has-error has-feedback" : "has-feedback"')
@@ -75,17 +114,17 @@ block content-common
                 .col-sm-2
                     input.form-control(type='password' id='pwd2' name='pwd2'
                     placeholder='#{lang.passwordRepeatEnter}' ng-model="register.password2"
-                    required ng-minlength='3' ng-maxlength='20' compare-to='register.password')
+                    required compare-to='register.password'
+                    ng-pattern=/^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])[A-Za-z\d$@$!%*#?&]{8,20}$/)
                     div(ng-show="form.pwd2.$valid")
                         .glyphicon.glyphicon-ok.form-control-feedback
                     div(ng-show="form.$submitted || form.pwd2.$touched")
                         .text-danger(ng-show="form.pwd2.$error.required") #{lang.passwordRepeatEnter}
                         .glyphicon.glyphicon-warning-sign.form-control-feedback(
                         ng-show="form.pwd2.$error.required")
-                        .text-danger(ng-show="form.pwd2.$error.minlength " +
-                        "|| form.pwd2.$error.maxlength") #{lang.fieldSizeCheck}
+                        .text-danger(ng-show="form.pwd2.$error.pattern") #{lang.fieldPatternCheck}
                         .glyphicon.glyphicon-warning-sign.form-control-feedback(
-                        ng-show="form.pwd2.$error.minlength || form.pwd2.$error.maxlength")
+                        ng-show="form.pwd2.$error.pattern")
                         .text-danger(ng-show="form.pwd2.$error.compareTo") #{lang.passwordsCheck}
                         .glyphicon.glyphicon-warning-sign.form-control-feedback(
                         ng-show="form.pwd2.$error.compareTo")

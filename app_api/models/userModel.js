@@ -13,6 +13,18 @@ var userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    surname: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    state: {
+        type: String,
+        required: true
+    },
     hash: String,
     salt: String
 });
@@ -34,7 +46,10 @@ userSchema.methods.generateJwt = function () {
         sub: {
             _id: this._id,
             userName: this.userName,
-            name: this.name
+            name: this.name,
+            surname: this.surname,
+            email: this.email,
+            state: this.state
         },
         iat: moment().unix(),
         exp: moment().add(14, "days").unix()

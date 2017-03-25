@@ -65,11 +65,41 @@ angular.module('multichatApp')
         webSocketManager.geolocationManagement.setUser(sub[0], sub[1]);
     }]);
 angular.module('multichatApp')
-    .controller('loginCtrl', ["$scope", "$http", "$window", "$cookies", function ($scope, $http, $window, $cookies) {
+    .controller('loginCtrl', ["$scope", "$http", "$window", "$cookies", "vcRecaptchaService", function ($scope, $http, $window, $cookies, vcRecaptchaService) {
+        $scope.response = null;
+        $scope.widgetId = null;
+
+        $scope.model = {
+            key: '6LdYVBoUAAAAAOXzOS1UIOeRrvHZLOD7pgxOoluc'
+        };
+
+        $scope.setResponse = function (response) {
+            console.info('Response available');
+
+            $scope.response = response;
+        };
+
+        $scope.setWidgetId = function (widgetId) {
+            console.info('Created widget ID: %s', widgetId);
+
+            $scope.widgetId = widgetId;
+        };
+
+        $scope.cbExpiration = function() {
+            console.info('Captcha expired. Resetting response object');
+
+            vcRecaptchaService.reload($scope.widgetId);
+
+            $scope.response = null;
+        };
+
         $scope.data = {};
         $scope.data.errorShow = false;
         $scope.data.userNotValid = false;
+
         $scope.submit = function (login) {
+
+            console.log('Success');
             console.log(login);
             $http({
                 method: "POST",
@@ -77,6 +107,7 @@ angular.module('multichatApp')
                 data: angular.toJson(login),
                 headers: {'Content-Type': 'application/json'}
             }).then(success, error);
+
         };
 
         function success(res) {
@@ -196,8 +227,8 @@ angular.module('multichatApp')
 angular.module('multichatApp')
     .controller('peopleCtrl', ["$scope", "webSocketManager", function ($scope, webSocketManager) {
         //Send a message to the server with the user that is connected
-        var sub = $scope.sub.split("%"); //userName%name
-        webSocketManager.peopleManagement.setConnected(sub[0], sub[1]);
+        var sub = $scope.sub.split("%"); //userName%name%surname%email%state
+        webSocketManager.peopleManagement.setConnected(sub[0], sub[1], sub[2], sub[3], sub[4]);
 
         $scope.data = {};
         //At the beginning there is an animation showing that the info is loading
@@ -459,6 +490,25 @@ angular.module('multichatApp')
             output += '<p>' + input.name + '</p>';
             return $sce.trustAsHtml(output);
         };
+    }]);
+angular.module('multichatApp')
+    .config(['growlProvider', function (growlProvider) {
+        growlProvider.globalPosition('bottom-right');
+        growlProvider.globalTimeToLive(2000);
+    }]);
+
+angular.module('multichatApp')
+    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
+        dropzoneOpsProvider.setOptions({
+            url: '/',
+            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
+        });
+    }]);
+
+//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
+angular.module('multichatApp')
+    .config(['$compileProvider', function ($compileProvider) {
+        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
     }]);
 angular.module('multichatApp')
     .service('utils', function () {
@@ -920,27 +970,34 @@ function PeopleManagement(ws, growl) {
         return people.loading;
     };
 
-    this.setConnected = function (userName, name) {
+    this.setConnected = function (userName, name, surname, email, state) {
         user = { //local user
             'userName': userName,
-            'name': name
+            'name': name,
+            'surname': surname,
+            'email' : email,
+            'state' : state
         };
         this.addPerson(user);
-        sendData(userName, name, 'connected');
+        sendData(userName, name, surname, email, state, 'connected');
     };
 
     this.setDisconnected = function () {
         this.deletePerson(user);
-        sendData(user.userName, user.name, 'disconnected');
+        sendData(user.userName, user.name, user.surname, user.email,
+            user.state, 'disconnected');
     };
 
-    function sendData(userName, name, operation) {
+    function sendData(userName, name, surname, email, state, operation) {
         ws.send(JSON.stringify({
             'section': 'people',
             'data': {
                 'operation': operation,
+                'userName': userName,
                 'name': name,
-                'userName': userName}
+                'surname': surname,
+                'email' : email,
+                'state' : state}
         }));
     }
 }
@@ -1356,22 +1413,3 @@ function VideoManagement(ws, growl) {
         }));
     }
 }
-angular.module('multichatApp')
-    .config(['growlProvider', function (growlProvider) {
-        growlProvider.globalPosition('bottom-right');
-        growlProvider.globalTimeToLive(2000);
-    }]);
-
-angular.module('multichatApp')
-    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
-        dropzoneOpsProvider.setOptions({
-            url: '/',
-            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
-        });
-    }]);
-
-//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
-angular.module('multichatApp')
-    .config(['$compileProvider', function ($compileProvider) {
-        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
-    }]);

@@ -1,9 +1,39 @@
 angular.module('multichatApp')
-    .controller('loginCtrl', function ($scope, $http, $window, $cookies) {
+    .controller('loginCtrl', function ($scope, $http, $window, $cookies, vcRecaptchaService) {
+        $scope.response = null;
+        $scope.widgetId = null;
+
+        $scope.model = {
+            key: '6LdYVBoUAAAAAOXzOS1UIOeRrvHZLOD7pgxOoluc'
+        };
+
+        $scope.setResponse = function (response) {
+            console.info('Response available');
+
+            $scope.response = response;
+        };
+
+        $scope.setWidgetId = function (widgetId) {
+            console.info('Created widget ID: %s', widgetId);
+
+            $scope.widgetId = widgetId;
+        };
+
+        $scope.cbExpiration = function() {
+            console.info('Captcha expired. Resetting response object');
+
+            vcRecaptchaService.reload($scope.widgetId);
+
+            $scope.response = null;
+        };
+
         $scope.data = {};
         $scope.data.errorShow = false;
         $scope.data.userNotValid = false;
+
         $scope.submit = function (login) {
+
+            console.log('Success');
             console.log(login);
             $http({
                 method: "POST",
@@ -11,6 +41,7 @@ angular.module('multichatApp')
                 data: angular.toJson(login),
                 headers: {'Content-Type': 'application/json'}
             }).then(success, error);
+
         };
 
         function success(res) {

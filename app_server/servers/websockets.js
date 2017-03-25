@@ -25,7 +25,10 @@ module.exports = function (httpsServer) {
                                     'ws': ws,
                                     'user': {
                                         'userName': obj.data.userName,
-                                        'name': obj.data.name
+                                        'name': obj.data.name,
+                                        'surname': obj.data.surname,
+                                        'email': obj.data.email,
+                                        'state': obj.data.state,
                                     },
                                     'geo': {
                                         'latitude': '',
@@ -125,7 +128,11 @@ module.exports = function (httpsServer) {
                         'data': {
                             'operation': 'connected',
                             'name': cnn.user.name,
-                            'userName': cnn.user.userName
+                            'userName': cnn.user.userName,
+                            'surname': cnn.user.surname,
+                            'email': cnn.user.email,
+                            'state': cnn.user.state
+
                         }
                     };
                     console.log('**Sent: %s to %s', JSON.stringify(message), sentBy);
@@ -136,6 +143,9 @@ module.exports = function (httpsServer) {
                             'operation': 'connected',
                             'name': cnn.user.name,
                             'userName': cnn.user.userName,
+                            'surname': cnn.user.surname,
+                            'email': cnn.user.email,
+                            'state': cnn.user.state,
                             'latitude': cnn.geo.latitude,
                             'longitude': cnn.geo.longitude
                         }

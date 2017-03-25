@@ -37,27 +37,34 @@ function PeopleManagement(ws, growl) {
         return people.loading;
     };
 
-    this.setConnected = function (userName, name) {
+    this.setConnected = function (userName, name, surname, email, state) {
         user = { //local user
             'userName': userName,
-            'name': name
+            'name': name,
+            'surname': surname,
+            'email' : email,
+            'state' : state
         };
         this.addPerson(user);
-        sendData(userName, name, 'connected');
+        sendData(userName, name, surname, email, state, 'connected');
     };
 
     this.setDisconnected = function () {
         this.deletePerson(user);
-        sendData(user.userName, user.name, 'disconnected');
+        sendData(user.userName, user.name, user.surname, user.email,
+            user.state, 'disconnected');
     };
 
-    function sendData(userName, name, operation) {
+    function sendData(userName, name, surname, email, state, operation) {
         ws.send(JSON.stringify({
             'section': 'people',
             'data': {
                 'operation': operation,
+                'userName': userName,
                 'name': name,
-                'userName': userName}
+                'surname': surname,
+                'email' : email,
+                'state' : state}
         }));
     }
 }

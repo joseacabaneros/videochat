@@ -15,6 +15,9 @@ module.exports.register = function (req, res) {
     var user = new User();
     user.userName = req.body.userName;
     user.name = req.body.name;
+    user.surname = req.body.surname;
+    user.email = req.body.email;
+    user.state = "Hey there I'm using MultiChat!"
     user.setPassword(req.body.password);
 
     user.save(function (err) {
@@ -68,6 +71,12 @@ module.exports.profile = function (req, res) {
 
             if (req.body.name != user.name)
                 user.name = req.body.name;
+            if (req.body.surname != user.surname)
+                user.surname = req.body.surname;
+            if (req.body.email != user.email)
+                user.email = req.body.email;
+            if (req.body.state != user.state)
+                user.state = req.body.state;
             if (req.body.password)
                 user.setPassword(req.body.password);
             User.update({userName: req.body.userName}, user, function (err) {

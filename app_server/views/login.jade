@@ -47,5 +47,12 @@ block content-common
                             .glyphicon.glyphicon-warning-sign.form-control-feedback(
                             ng-show="form.pwd.$error.minlength || form.pwd.$error.maxlength")
 
-                button.btn.btn-info(type='submit'
-                ng-click='form.$valid && submit(register)') #{lang.submit}
+                //Recaptcha
+                div(vc-recaptcha
+                theme="'light'"
+                key="model.key"
+                on-create="setWidgetId(widgetId)"
+                on-success="setResponse(response)"
+                on-expire="cbExpiration()")
+
+                button.btn.btn-info(type='submit' ng-click='form.$valid && submit(register)') #{lang.submit}
