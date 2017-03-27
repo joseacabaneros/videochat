@@ -18,6 +18,8 @@ angular.module('multichatApp')
         var videoconferenceManagement = new VideoconferenceManagement(ws, growl);
         var drawingManagement = new DrawingManagement(ws);
         var presentationManagement = new PresentationManagement(ws, growl);
+        var presentationMultichatManagement = new PresentationMultichatManagement(ws, growl);
+        var videoMultichatManagement = new VideoMultichatManagement(ws, growl);
 
         ws.onOpen(function () {
             peopleManagement.setLoading(false);
@@ -74,6 +76,9 @@ angular.module('multichatApp')
                     case "presentation":
                         presentationManagement.updateSlide(obj.data);
                         break;
+                    case "presentationMultichat":
+                        presentationMultichatManagement.updateSlide(obj.data);
+                        break;
                 }
             }
         });
@@ -90,7 +95,9 @@ angular.module('multichatApp')
             videoconferenceManagement: videoconferenceManagement,
             drawingManagement: drawingManagement,
             geolocationManagement: geolocationManagement,
-            presentationManagement: presentationManagement
+            presentationManagement: presentationManagement,
+            presentationMultichatManagement: presentationMultichatManagement,
+            videoMultichatManagement: videoMultichatManagement
         };
 
         return methods;

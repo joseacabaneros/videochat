@@ -20,4 +20,10 @@ config.audioUrl = 'http://ruhit.imgradio.pro:80/RusHit48'; //shoutcast (in .pls 
 
 config.presentationUrl = 'reveal-js/index.html';
 
+//Presentation Multichat con RevealJS
+config.presentationMultichatUrl = 'revealjsMultichat/index.html';
+
+//Video presentacion Multichat con Camtasia
+config.videoMultichatUrl = 'https://156.35.98.12/multichatcamtasia/multichat.mp4';
+
 module.exports = config;

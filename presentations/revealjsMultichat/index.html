@@ -1,0 +1,655 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Multichat</title>
+
+		<meta name="description" content="Presentación de Multichat">
+		<meta name="author" content="Jose Antonio Cabaneros Blanco">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/beige.css" id="theme">
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h1>Multichat</h1>
+					<h3>MEAN - WebSockets - WebRTC</h3>
+					<p><i>Jose Antonio Cabañeros Blanco - UO234549</i></p>
+					<p><a href="http://secret-depths-52303.herokuapp.com/">Multichat Heroku por HTTP <small>(para prueba del streaming adaptativo MPEG-DASH)</small></a></p>
+					<p><a href="https://secret-depths-52303.herokuapp.com/">Multichat Heroku por HTTPS</a></p>
+				</section>
+				<section>
+                    <h2>Realización del Tutorial <i>Multichat</i></h2>
+                    <p><i>Multichat</i> es una aplicación web desarrollada con las tecnologías MEAN(MongoDB, 
+                        Express, AngularJS y NodeJS) junto al uso de WebSockets y WebRTC.
+                    </p>
+                    <p>Gestiona usuarios para su acceso a la plataforma. Una vez registrado en <i>Multichat</i> el usuario visualiza los usuarios conectados, un chat con el que hablar con otros usuarios
+                    conectados, puede visualizar la localización de los usuarios, ver videos y audios en 
+                    broadcast, dibujo colaborativo o presentaciones en RevealJS.</p>
+                </section>
+                <section>
+                    <h2>Ampliaciones I</h2>
+                    <p>Las ampliaciones "obligatorias" realizadas en <i>Multichat</i> son: </p>
+                    <ul>
+                        <li>Creación emisora de <b>radio Shoutcast</b> y reproducirla desde <i>Multichat</i></li>
+                        <li>Distribuir un <b>video en un servidor IIS Media Services</b> y reproducirlo desde <i>Multichat</i></li>
+                        <li>Crear un <b>video adaptativo con MPEG-DASH</b>, distribuirlo en un servidor Apache y reproducirlo en Multichat</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Ampliaciones II</h2>
+                    <p>Otras ampliaciones "extra" realizadas en <i>Multichat</i> son: </p>
+                    <ul>
+                        <li>Gestionar <b>más datos de cada uno de los usuarios</b></li>
+                        <li>Incluir más validaciones para crear <b>contraseñas más seguras</b></li>
+                        <li>Utilizar un <b>CAPTCHA</b> cuando un usuario pretende acceder al sistema</li>
+                        <li>Pasar el ratón por encima en uno de los usuarios de la lista y <b>mostrar información
+                        sobre él</b></li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Aspecto actual de <i>Multichat</i></h2>
+                    <img src="images/principal.PNG">
+                </section>
+                
+                
+                <section>
+                    <section>
+                        <h2>Ampliación I - Radio Shoutacast</h2>
+                        <div style="text-align: left; float: left;">
+                            <img src="images/winamp.PNG">
+                        </div>
+                        <div style="text-align: center; float: right;">
+                            <p>Instalar Winamp</p>
+                            <p>Instalar Shoutcast</p>
+                            <p>Plugin Shoutcast</p>
+                            <p>Configuración Winamp y Shoutcast</p>
+                            <p>Añadir radio a <i>Multichat</i></p>
+                            <img src="images/shoutcast.PNG">
+                        </div>
+                    </section>
+                    <section>
+                        <h2>Ampliación I - Radio Shoutacast</h2>
+                        <ol>
+                            <li>Instalar y configurar Winamp y Shoutcast</li>
+                            <li>Probar emisión en VLC</li>
+                            <li>Añadir URL de la radio shoutcast a <code>config.js</code> de la parte del 
+                            servidor</li>
+                            <li>Incluir una nueva pestaña para añadir la opción de radio</li>
+                            <li>Referenciar la URL de la radio en el bloque de dicha pestaña</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h2>Ampliación I - Radio Shoutacast</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+//Shoutcast emision http://156.35.98.12:8001/listen.pls
+config.radioUrl = 'http://156.35.98.12:8001/;';
+                        </code></pre>
+                        <code><small>/app_server/config.js</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+li
+    a(href='#radio' data-toggle='tab') #{layoutMultichat.radio}
+li
+    a(href='#video' data-toggle='tab') #{layoutMultichat.video}
+...
+.tab-pane.fade#radio
+    block radio
+.tab-pane.fade#video
+    block video
+                        </code></pre>
+                        <code><small>/app_server/views/layout-multichat.jade</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación I - Radio Shoutacast</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+module.exports.multichat = function (req, res, next) {
+    res.render('multichat', {
+        authenticated: true,
+        config: {
+            radioUrl: config.radioUrl,
+            videoUrl: config.videoUrl,
+                        </code></pre>
+                        <code><small>/app_server/controllers/controllers.js</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+block radio
+    .div
+        audio#radioId(controls width="100%" height="100%")
+            source#radioSource(src='#{config.radioUrl}')
+                        </code></pre>
+                        <code><small>/app_server/views/multichat.jade</small></code>
+                    </section>
+                </section>
+                
+                
+                <section>
+                    <section>
+                        <h2>Ampliación II - IIS Media Services</h2>
+                        <p>Instalar IIS Media Services</p>
+                        <p>Configuración del servidor de streaming IIS Media Services</p>
+                        <p>Añadir video streaming a <i>Multichat</i></p>
+                        <img src="images/streaming.PNG">
+                    </section>
+                    <section>
+                        <h2>Ampliación II - IIS Media Services</h2>
+                        <ol>
+                            <li>Instalar y configurar el servidor de streaming IIS Media Servides</li>
+                            <li>Añadir video para ser servido</li>
+                            <li>Añadir URL del video en <code>config.js</code> de la parte del servidor</li>
+                            <li>Incluir una nueva pestaña para añadir la opción de video en streaming</li>
+                            <li>Referenciar la URL del video en el bloque de dicha pestaña</li>
+                        </ol>
+                        <img src="images/iis.PNG">
+                    </section>
+                    <section>
+                        <h2>Ampliación II - IIS Media Services</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+//Video streaming no adaptativo de nuestro servidor IIS
+config.streamingUrl = 'https://156.35.98.12:8443/video/something.mp4'; //https
+//config.streamingUrl = 'http://156.35.98.12:9999/video/something.mp4'; //http
+                        </code></pre>
+                        <code><small>/app_server/config.js</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+li.active
+    a(href='#streaming' data-toggle='tab') #{layoutMultichat.streaming}
+li
+    a(href='#radio' data-toggle='tab') #{layoutMultichat.radio}
+...
+.tab-pane.fade.in.active#streaming
+    block streaming
+.tab-pane.fade#radio
+    block radio
+                        </code></pre>
+                        <code><small>/app_server/views/layout-multichat.jade</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación II - IIS Media Services</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+module.exports.multichat = function (req, res, next) {
+    res.render('multichat', {
+        authenticated: true,
+        config: {
+            streamingUrl: config.streamingUrl,
+            radioUrl: config.radioUrl,
+                        </code></pre>
+                        <code><small>/app_server/controllers/controllers.js</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+block streaming
+    div.panel.panel-default
+        div.panel-body
+            h4=lang.streamingNonAdaptative
+            video#streamingId(controls width="100%" height="100%")
+                source#streamingSource(src='#{config.streamingUrl}')
+                        </code></pre>
+                        <code><small>/app_server/views/multichat.jade</small></code>
+                    </section>
+                </section>
+                
+                
+                <section>
+                    <section>
+                        <h2>Ampliación III - Streaming adaptativo MPEG-DASH</h2>
+                        <p>Creación de segmentos de audio, video y manifiesto con <b>ffmpeg</b>. Distribuir en servidor Apache</p>
+                        <p>Añadir librería <i>Dashjs</i> a Multichat y reproducción del contenido en <i>Multichat</i> con Dash.js</p>
+                        <img src="images/dash.PNG">
+                    </section>
+                    <section>
+                        <h2>Ampliación III - Streaming adaptativo MPEG-DASH</h2>
+                        <ol>
+                            <li>Creación de segmentos de audio y video con <b>ffmpeg</b></li>
+                            <li>Creación del manifiesto DASH</li>
+                            <li>Distribuir contenido en servidor Apache</li>
+                            <li>Añadir librería <i>Dashjs</i> a Multichat</li>
+                            <li>Añadir URL del manifiesto .mpd de Apache en <code>config.js</code> de la 
+                            parte del cliente</li>
+                            <li>Añadir <code>dashvideoManagement.js</code> en la parte del cliente para 
+                            configurar el video adaptativo DASH que será mostrado en <i>Multichat</i></li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h2>Ampliación III - Streaming adaptativo MPEG-DASH</h2>
+                        <p>Segmentos de audio, video y manifiesto DASH con <code>ffmpeg</code></p>
+                        <img src="images/apache.PNG"><br/>
+                        <a href="http://156.35.98.12/videodash/video.html">Prueba del video adaptativo DASH</a>
+                    </section>
+                    <section>
+                        <h2>Ampliación III - Streaming adaptativo MPEG-DASH</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+"ng-dropzone": "ngdropzone#^2.0.1",
+"dashjs": "dashjs#v2.4.1",
+                        </code></pre>
+                        <code><small>/bower.json</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+//Video dash streaming adaptativo de servidor apache
+config.dashUrl = 'https://156.35.98.12/videodash/manifest.mpd';
+                        </code></pre>
+                        <code><small>/app_client/config.js</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+block streaming
+    ...
+    div.panel.panel-default
+        div.panel-body
+            h4=lang.streamingAdaptative
+            video#dashvideoId(controls width="100%" height="100%")
+                        </code></pre>
+                        <code><small>/app_server/views/multichat.jade</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación III - Streaming adaptativo MPEG-DASH</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+function DashvideoManagement() {
+    var video,context,player;
+    video = document.getElementById('dashvideoId');
+    context = new Webm.di.WebmContext();
+    player = new MediaPlayer(context);
+    player.startup();
+    player.attachView(video);
+    player.setAutoPlay(true);
+    player.attachSource(config.dashUrl); //url del mpd adaptativo
+}
+                        </code></pre>
+                        <code><small>/app_client/javascript/utils/dashvideoManagement.js</small></code>
+                        <p>Además de referenciar <code>dashvideoManagement.js</code> en <code>layout-basic.jade</code></p>
+                    </section>
+                </section>
+                
+                
+                <section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <p>Añadir los campos <i>surname, email y state</i> a los datos registrados de los
+                        usuarios</p>
+                        <img src="images/profile.PNG">
+                    </section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <ol>
+                            <li>Añadir los campos <i>surname, email y state</i> al modelo del usuario de Mongo</li>
+                            <li>Añadir campos en el registro y en la modificación de datos de usuario y sus 
+                            respectivas modificaciones en el controlador de la API</li>
+                            <li>Añadir los nuevos campos en el controlador <i>people</i> y <i>web sockets</i>
+                            del servidor para que los gestione</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+name: {
+    type: String,
+    required: true
+},
+surname: {
+    type: String,
+    required: true
+},
+email: {
+    type: String,
+    required: true
+},
+state: {
+    type: String,
+    required: true
+},
+hash: String,
+                        </code></pre>
+                        <code><small>/app_api/models/userModel.js</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+var payload = {
+    sub: {
+        _id: this._id,
+        userName: this.userName,
+        name: this.name,
+        surname: this.surname,
+        email: this.email,
+        state: this.state
+    },
+                        </code></pre>
+                        <code><small>/app_api/models/userModel.js</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+var user = new User();
+user.userName = req.body.userName;
+user.name = req.body.name;
+user.surname = req.body.surname;
+user.email = req.body.email;
+user.state = "Hey there I'm using MultiChat!"
+user.setPassword(req.body.password);
+                        </code></pre>
+                        <code><small>/app_api/controllers/userCtrl.js(register)</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+if (req.body.name != user.name)
+    user.name = req.body.name;
+if (req.body.surname != user.surname)
+    user.surname = req.body.surname;
+if (req.body.email != user.email)
+    user.email = req.body.email;
+if (req.body.state != user.state)
+    user.state = req.body.state;
+                        </code></pre>
+                        <code><small>/app_api/controllers/userCtrl.js(profile)</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+//Send a message to the server with the user that is connected
+var sub = $scope.sub.split("%"); //userName%name%surname%email%state
+webSocketManager.peopleManagement.setConnected(sub[0], sub[1], sub[2], sub[3], sub[4]);
+                        </code></pre>
+                        <code><small>/app_client/javascript/controllers/peopleCtrl.js</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+this.setConnected = function (userName, name, surname, email, state) {
+    user = { //local user
+        'userName': userName,
+        'name': name,
+        'surname': surname,
+        'email' : email,
+        'state' : state
+    };
+                        </code></pre>
+                        <code><small>/app_client/javascript/utils/peopleManagement.js</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación IV - Gestión de más datos de usuarios</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+.form-group(ng-class='((form.email.$touched || form.$submitted) ' +
+'&& form.email.$invalid) ? "has-error has-feedback" : "has-feedback"')
+    label.control-label.col-sm-1(for='email') #{lang.email}:
+    .col-sm-2
+        input.form-control(type='email' id='email' name='email'
+        ng-init='profile.email="#{sub.email}"' ng-model="profile.email")
+        div(ng-show="form.email.$valid")
+            .glyphicon.glyphicon-ok.form-control-feedback
+        div(ng-show="form.$submitted || form.email.$touched")
+            .text-danger(ng-show="form.email.$error.email") #{lang.emailCheck}
+            .glyphicon.glyphicon-warning-sign.form-control-feedback(
+            ng-show="form.surname.$error.email")
+                        </code></pre>
+                        <code><small>/app_server/views/profile.jade</small></code>
+                    </section>
+                </section>
+                
+                
+                <section>
+                    <section>
+                        <h2>Ampliación V - Información de usuarios en lista</h2>
+                        <p>Mostrar información de los usuarios añadida en la ampliación anterior en el 
+                        listado de usuarios</p>
+                        <p>Añadir estado del usuario junto a su nombre en el listado. Nombre de usuario, nombre, apellido y correo en tooltip sobre el usuario</p>
+                        <img src="images/tooltip.png">
+                    </section>
+                    <section>
+                        <h2>Ampliación V - Información de usuarios en lista</h2>
+                        <ol>
+                            <li>Añadir nuevos campos de los usuarios en la vista <i>multichat</i></li>
+                            <li>Mostrar el estado del usuario junto al nombre del usuario conectado</li>
+                            <li>Añadir tooltip a cada usuario para que al pasar el ratón sobre el mismo
+                            en la lista de usuarios conectados se muestre el nombre de usuario, nombre, apellido y correo electrónico</li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h2>Ampliación V - Información de usuarios en lista</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+block people
+    div(ng-init='sub="#{sub.userName}%#{sub.name}%#{sub.surname}%#{sub.email}%#{sub.state}"')
+        div#peopleList(ng-controller='peopleCtrl')
+            div(ng-if='data.loading[0] == true')
+                md-progress-circular(md-mode='indeterminate')
+            div(ng-if='data.loading[0] == false' ng-cloak)
+                ul#listGroupPeople.list-group
+                    li.list-group-item(ng-repeat='person in data.people'
+                    uib-tooltip-html="'<h4>{{person.userName}}</h4> " +
+                    "<p>{{person.name}} {{person.surname}}</p>" +
+                    "<i>{{person.email}}</i>'"
+                    tooltip-placement="right-top")
+                        .fa.fa-user-circle.fa &nbsp;
+                        | {{person.name}}
+                        br
+                        small {{person.state}}
+                        </code></pre>
+                        <code><small>/app_server/views/multichat.jade</small></code>
+                    </section>
+                </section>
+                
+                
+                <section>
+                    <section>
+                        <h2>Ampliación VI - Contraseñas más seguras</h2>
+                        <p>Añadir un patrón a la contraseña de registro del usuario que le obligue a usar un 
+                        número determinado de caracteres y usar mayúsculas y números</p>
+                        <p>Personalizar el mensaje de error de contraseña inválida</p>
+                        <img src="images/registro.PNG">
+                    </section>
+                    <section>
+                        <h2>Ampliación VI - Contraseñas más seguras</h2>
+                        <ol>
+                            <li>Añadir <i>ng-pattern</i> al campo <code>password</code> del formulario
+                            de registro de usuarios</li>
+                            <li>El patrón obligará al usuario a introducir una contraseña de 8 a 20 caracteres. Además, debe contener al menos una minúscula, una mayúscula y un número</li>
+                            <li>Mostrar un mensaje en caso de contraseña invalida informando del error</li>
+                            <li>Añadir lo mismo en el campo <code>repeatPassword</code></li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h2>Ampliación VI - Contraseñas más seguras</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+.form-group(ng-class='((form.pwd.$touched || form.$submitted) ' +
+'&& form.pwd.$invalid) ? "has-error has-feedback" : "has-feedback"')
+    label.control-label.col-sm-1(for='pwd') #{lang.password}:
+    .col-sm-2
+        input.form-control(type='password' id='pwd' name='pwd'
+        placeholder='#{lang.passwordEnter}' ng-model="register.password"
+        required
+        ng-pattern=/^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])[A-Za-z\d$@$!%*#?&]{8,20}$/)
+        div(ng-show="form.pwd.$valid")
+            .glyphicon.glyphicon-ok.form-control-feedback
+        div(ng-show="form.$submitted || form.pwd.$touched")
+            .text-danger(
+            ng-show="form.pwd.$error.required") #{lang.passwordRequired}
+            .glyphicon.glyphicon-warning-sign.form-control-feedback(
+            ng-show="form.pwd.$error.required")
+            .text-danger(ng-show="form.pwd.$error.pattern") #{lang.fieldPatternCheck}
+            .glyphicon.glyphicon-warning-sign.form-control-feedback(
+            ng-show="form.pwd.$error.pattern")
+                        </code></pre>
+                        <code><small>/app_server/views/register.jade(password)</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación VI - Contraseñas más seguras</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+.form-group(ng-class='((form.pwd2.$touched || form.$submitted) ' +
+'&& form.pwd2.$invalid) ? "has-error has-feedback" : "has-feedback"')
+    label.control-label.col-sm-1(for='pwd2') #{lang.passwordRepeat}:
+    .col-sm-2
+        input.form-control(type='password' id='pwd2' name='pwd2'
+        placeholder='#{lang.passwordRepeatEnter}' ng-model="register.password2"
+        required compare-to='register.password'
+        ng-pattern=/^(?=.*[A-Z])(?=.*\d)(?=.*[a-z])[A-Za-z\d$@$!%*#?&]{8,20}$/)
+        div(ng-show="form.pwd2.$valid")
+            .glyphicon.glyphicon-ok.form-control-feedback
+        div(ng-show="form.$submitted || form.pwd2.$touched")
+            .text-danger(ng-show="form.pwd2.$error.required") #{lang.passwordRepeatEnter}
+            .glyphicon.glyphicon-warning-sign.form-control-feedback(
+            ng-show="form.pwd2.$error.required")
+            .text-danger(ng-show="form.pwd2.$error.pattern") #{lang.fieldPatternCheck}
+            .glyphicon.glyphicon-warning-sign.form-control-feedback(
+            ng-show="form.pwd2.$error.pattern")
+            .text-danger(ng-show="form.pwd2.$error.compareTo") #{lang.passwordsCheck}
+            .glyphicon.glyphicon-warning-sign.form-control-feedback(
+            ng-show="form.pwd2.$error.compareTo")
+                        </code></pre>
+                        <code><small>/app_server/views/register.jade(repeatPassword)</small></code>
+                    </section>
+                </section>
+                
+                
+                <section>
+                    <section>
+                        <h2>Ampliación VII - CAPTCHA en login</h2>
+                        <p>El usuario deberá validar el CAPTCHA mostrado en la ventana de login antes de 
+                        poder acceder a <i>Multichat</i>. El objetivo es evitar que los <i>robots</i> 
+                        puedan realizar login en nuestro sitio web.</p>
+                        <img src="images/login.PNG">
+                    </section>
+                    <section>
+                        <h2>Ampliación VII - CAPTCHA en login</h2>
+                        <ol>
+                            <li>Añadir la librería <code>angular-recaptcha</code> a <i>Multichat</i></li>
+                            <li>Referenciar la librería añadida en <code>layout-basic.jade</code></li>
+                            <li>Crear clave en Google Recaptcha</li>
+                            <li>Añadir la KEY de Google Recaptcha y funciones necesarias en <code>loginCtrl.js</code></li>
+                            <li>Añadir componente de CAPTCHA en <code>login.jade</code></li>
+                        </ol>
+                    </section>
+                    <section>
+                        <h2>Ampliación VII - CAPTCHA en login</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+"ng-dropzone": "ngdropzone#^2.0.1",
+"dashjs": "dashjs#v2.4.1",
+"angular-recaptcha": "^4.0.0"
+                        </code></pre>
+                        <code><small>/bower.json</small></code>
+                        <pre><code class="hljs" data-trim contenteditable >
+script(src='/fabric.js/dist/fabric.min.js')
+script(src='/dashjs/contrib/webmjs/dash.webm.min.js')
+script(src='/angular-recaptcha/release/angular-recaptcha.js')
+                        </code></pre>
+                        <code><small>/app_server/views/layout-basic.jade</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación VII - CAPTCHA en login</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+angular.module('multichatApp')
+    .controller('loginCtrl', function ($scope, $http, $window, $cookies, vcRecaptchaService) {
+        $scope.response = null;
+        $scope.widgetId = null;
+
+        $scope.model = {
+            key: '6LdYVBoUAAAAAOXzOS1UIOeRrvHZLOD7pgxOoluc'
+        };
+
+        $scope.setResponse = function (response) {
+            console.info('Response available');
+
+            $scope.response = response;
+        };
+
+        $scope.setWidgetId = function (widgetId) {
+            console.info('Created widget ID: %s', widgetId);
+
+            $scope.widgetId = widgetId;
+        };
+
+        $scope.cbExpiration = function() {
+            console.info('Captcha expired. Resetting response object');
+
+            vcRecaptchaService.reload($scope.widgetId);
+
+            $scope.response = null;
+        };
+                        </code></pre>
+                        <code><small>/app_client/javascripts/controllers/loginCtrl.js</small></code>
+                    </section>
+                    <section>
+                        <h2>Ampliación VII - CAPTCHA en login</h2>
+                        <pre><code class="hljs" data-trim contenteditable >
+//Recaptcha
+div(vc-recaptcha
+theme="'light'"
+key="model.key"
+on-create="setWidgetId(widgetId)"
+on-success="setResponse(response)"
+on-expire="cbExpiration()")
+
+button.btn.btn-info(type='submit' ng-click='form.$valid && submit(register)') #{lang.submit}
+                        </code></pre>
+                        <code><small>/app_server/views/login.jade</small></code>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Consideraciones finales</h2>
+                        <p>El objetivo de esta presentación es mostrar un resumen de las ampliaciones 
+                        realizadas en <i>Multichat</i>. Por ello, en cada una de las ampliaciones explicadas
+                        se incluye únicamente los aspectos más importantes. </p>
+                        <p>Puede consultarse el código completo de <i>Multichat</i> con las ampliaciones en 
+                        el siguiente enlace:</p>
+                        <a href="https://github.com/joseacabaneros/videochat">https://github.com/joseacabaneros/videochat</a>
+                    </section>
+                </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true, //Display controls in the bottom right corner
+				progress: true, //Display a presentation progress bar
+                slideNumber: true, //Display the page number of the current slide
+				history: true, //Push each slide change to the browser history
+				keyboard: true, //Enable keyboard shortcuts for navigation
+                overview: true, //Enable the slide overview mode
+                center: true, //Vertical centering of slides
+                touch: true, //Enables touch navigation on devices with touch input
+                loop: false, //Loop the presentation
+                rtl: false, //Change the presentation direction to be RTL
+                fragments: true,  //Turns fragments on and off globally
+                embedded: false, //Flags if the presentation is running in an embedded mode, i.e. contained within a limited portion of the screen
+                help: true, //Flags if we should show a help overlay when the questionmark key is pressed
+                showNotes: false, //Flags if speaker notes should be visible to all viewers
+                autoSlide: 0, //Number of milliseconds between automatically proceeding to the next slide, disabled when set to 0, this value can be overwritten by using a data-autoslide attribute on your slides
+                autoSlideStoppable: true, //Stop auto-sliding after user input
+                mouseWheel: true, //Enable slide navigation via mouse wheel
+                hideAddressBar: true, //Hides the address bar on mobile devices
+                previewLinks: false, //Opens links in an iframe preview overlay
+                transition: 'concave', //none/fade/slide/convex/concave/zoom
+                transitionSpeed: 'slow', //default/slow/fast
+                backgroundTransition: 'default', //none/fade/slide/convex/concave/zoom  //Transition style for full page slide backgrounds
+
+
+               // viewDistance: 7,  //Number of slides away from the current that are visible
+               // parallaxBackgroundImage: '', //e.g. "'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg'" // Parallax background image
+               // parallaxBackgroundSize: '', //CSS syntax, e.g. "2100px 900px" // Parallax background size
+               // parallaxBackgroundHorizontal: null, //Number of pixels to move the parallax background per slide
+               // parallaxBackgroundVertical: null,
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+		</script>
+	</body>
+</html>

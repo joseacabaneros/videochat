@@ -138,6 +138,13 @@ block videoconference
             | &nbsp; Mute &nbsp;
         div#videoconferenceArea(ng-cloak)
             video#videoconferenceLocal
+block presentationMultichat
+    div(ng-controller='presentationMultichatCtrl')
+        iframe#iframeMultichat(src='#{config.presentationMultichatUrl}' width='100%' height='400px')
+block videoMultichat
+    div
+        video#videoMultichatId(controls width="100%" height="100%")
+            source#videoMultichatSource(src='#{config.videoMultichatUrl}')
 block geolocation
     div(ng-controller='geolocationCtrl')
         #map

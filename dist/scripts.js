@@ -243,6 +243,12 @@ angular.module('multichatApp')
         webSocketManager.presentationManagement.setUser(sub[0], sub[1]);
     }]);
 angular.module('multichatApp')
+    .controller('presentationMultichatCtrl', ["$scope", "webSocketManager", function ($scope, webSocketManager) {
+        //Send a message to the server with the user that is connected
+        var sub = $scope.sub.split("%"); //userName%name
+        webSocketManager.presentationMultichatManagement.setUser(sub[0], sub[1]);
+    }]);
+angular.module('multichatApp')
     .controller('profileCtrl', ["$scope", "$http", "$window", "$cookies", function ($scope, $http, $window, $cookies) {
         $scope.data = {};
         $scope.data.errorShow = false;
@@ -374,6 +380,124 @@ angular.module('multichatApp')
         };
     }]);
 angular.module('multichatApp')
+    .service('utils', function () {
+        function isJson(str) {
+            try {
+                JSON.parse(str);
+            } catch (e) {
+                return false;
+            }
+            return true;
+        }
+
+        var methods = {isJson: isJson};
+        return methods;
+    });
+angular.module('multichatApp')
+    .service('webSocketManager', ["$websocket", "growl", "utils", function ($websocket, growl, utils) {
+        if (!window.WebSocket) {
+            console.log("WebSockets NOT supported.");
+            alert("Consider updating your browser for a better experience.");
+        }
+
+        var HOST = location.origin.replace(/^http/, 'ws');
+        var ws = $websocket(HOST);
+        var peopleManagement = new PeopleManagement(ws, growl);
+        var messagesManagement = new MessagesManagement(ws, growl);
+        var geolocationManagement = new GeolocationManagement(ws, growl);
+        var streamingManagement = new StreamingManagement(ws, growl);
+        var dashvideoManagement = new DashvideoManagement();
+        var radioManagement = new RadioManagement(ws, growl);
+        var videoManagement = new VideoManagement(ws, growl);
+        var audioManagement = new AudioManagement(ws, growl);
+        var videoconferenceManagement = new VideoconferenceManagement(ws, growl);
+        var drawingManagement = new DrawingManagement(ws);
+        var presentationManagement = new PresentationManagement(ws, growl);
+        var presentationMultichatManagement = new PresentationMultichatManagement(ws, growl);
+        var videoMultichatManagement = new VideoMultichatManagement(ws, growl);
+
+        ws.onOpen(function () {
+            peopleManagement.setLoading(false);
+            messagesManagement.setLoading(false);
+            videoconferenceManagement.setLoading(false);
+            growl.success('Server started. Enjoy!', {title: 'Success',});
+            setInterval(function () {
+                ws.send('ping at ' + new Date().getUTCSeconds());
+            }, 30000);
+        });
+
+        window.onbeforeunload = function () {
+            //disconnect current user
+            geolocationManagement.setDisconnected();
+            peopleManagement.setDisconnected();
+            videoconferenceManagement.setDisconnected();
+            ws.close();
+        };
+
+        ws.onMessage(function (message) {
+            if (utils.isJson(message.data)) {
+                var obj = JSON.parse(message.data);
+                switch (obj.section) {
+                    case "people":
+                        if (obj.data.operation == 'connected')
+                            peopleManagement.addPerson(obj.data);
+                        else if (obj.data.operation == 'disconnected')
+                            peopleManagement.deletePerson(obj.data);
+                        break;
+                    case "messages":
+                        messagesManagement.addMessage(obj.data);
+                        break;
+                    case "video":
+                        videoManagement.updateVideoUrl(obj.data.url);
+                        break;
+                    case "audio":
+                        audioManagement.updateAudioUrl(obj.data.url);
+                        break;
+                    case "videoconference":
+                        videoconferenceManagement.getMessage(obj.data);
+                        break;
+                    case "drawings":
+                        if (obj.data.operation == 'add')
+                            drawingManagement.addObject(obj.data.type, obj.data.info);
+                        else if (obj.data.operation == 'clearAll')
+                            drawingManagement.clearObjects();
+                        break;
+                    case "geolocation":
+                        if (obj.data.operation == 'connected')
+                            geolocationManagement.addMarker(obj.data);
+                        else if (obj.data.operation == 'disconnected')
+                            geolocationManagement.deleteMarker(obj.data);
+                        break;
+                    case "presentation":
+                        presentationManagement.updateSlide(obj.data);
+                        break;
+                    case "presentationMultichat":
+                        presentationMultichatManagement.updateSlide(obj.data);
+                        break;
+                }
+            }
+        });
+
+        var methods = {
+            ws: ws,
+            peopleManagement: peopleManagement,
+            messagesManagement: messagesManagement,
+            streamingManagement: streamingManagement,
+            dashvideoManagement: dashvideoManagement,
+            radioManagement: radioManagement,
+            videoManagement: videoManagement,
+            audioManagement: audioManagement,
+            videoconferenceManagement: videoconferenceManagement,
+            drawingManagement: drawingManagement,
+            geolocationManagement: geolocationManagement,
+            presentationManagement: presentationManagement,
+            presentationMultichatManagement: presentationMultichatManagement,
+            videoMultichatManagement: videoMultichatManagement
+        };
+
+        return methods;
+    }]);
+angular.module('multichatApp')
     .directive("compareTo", function () {
         return {
             restrict: 'A',
@@ -490,136 +614,6 @@ angular.module('multichatApp')
             output += '<p>' + input.name + '</p>';
             return $sce.trustAsHtml(output);
         };
-    }]);
-angular.module('multichatApp')
-    .config(['growlProvider', function (growlProvider) {
-        growlProvider.globalPosition('bottom-right');
-        growlProvider.globalTimeToLive(2000);
-    }]);
-
-angular.module('multichatApp')
-    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
-        dropzoneOpsProvider.setOptions({
-            url: '/',
-            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
-        });
-    }]);
-
-//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
-angular.module('multichatApp')
-    .config(['$compileProvider', function ($compileProvider) {
-        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
-    }]);
-angular.module('multichatApp')
-    .service('utils', function () {
-        function isJson(str) {
-            try {
-                JSON.parse(str);
-            } catch (e) {
-                return false;
-            }
-            return true;
-        }
-
-        var methods = {isJson: isJson};
-        return methods;
-    });
-angular.module('multichatApp')
-    .service('webSocketManager', ["$websocket", "growl", "utils", function ($websocket, growl, utils) {
-        if (!window.WebSocket) {
-            console.log("WebSockets NOT supported.");
-            alert("Consider updating your browser for a better experience.");
-        }
-
-        var HOST = location.origin.replace(/^http/, 'ws');
-        var ws = $websocket(HOST);
-        var peopleManagement = new PeopleManagement(ws, growl);
-        var messagesManagement = new MessagesManagement(ws, growl);
-        var geolocationManagement = new GeolocationManagement(ws, growl);
-        var streamingManagement = new StreamingManagement(ws, growl);
-        var dashvideoManagement = new DashvideoManagement();
-        var radioManagement = new RadioManagement(ws, growl);
-        var videoManagement = new VideoManagement(ws, growl);
-        var audioManagement = new AudioManagement(ws, growl);
-        var videoconferenceManagement = new VideoconferenceManagement(ws, growl);
-        var drawingManagement = new DrawingManagement(ws);
-        var presentationManagement = new PresentationManagement(ws, growl);
-
-        ws.onOpen(function () {
-            peopleManagement.setLoading(false);
-            messagesManagement.setLoading(false);
-            videoconferenceManagement.setLoading(false);
-            growl.success('Server started. Enjoy!', {title: 'Success',});
-            setInterval(function () {
-                ws.send('ping at ' + new Date().getUTCSeconds());
-            }, 30000);
-        });
-
-        window.onbeforeunload = function () {
-            //disconnect current user
-            geolocationManagement.setDisconnected();
-            peopleManagement.setDisconnected();
-            videoconferenceManagement.setDisconnected();
-            ws.close();
-        };
-
-        ws.onMessage(function (message) {
-            if (utils.isJson(message.data)) {
-                var obj = JSON.parse(message.data);
-                switch (obj.section) {
-                    case "people":
-                        if (obj.data.operation == 'connected')
-                            peopleManagement.addPerson(obj.data);
-                        else if (obj.data.operation == 'disconnected')
-                            peopleManagement.deletePerson(obj.data);
-                        break;
-                    case "messages":
-                        messagesManagement.addMessage(obj.data);
-                        break;
-                    case "video":
-                        videoManagement.updateVideoUrl(obj.data.url);
-                        break;
-                    case "audio":
-                        audioManagement.updateAudioUrl(obj.data.url);
-                        break;
-                    case "videoconference":
-                        videoconferenceManagement.getMessage(obj.data);
-                        break;
-                    case "drawings":
-                        if (obj.data.operation == 'add')
-                            drawingManagement.addObject(obj.data.type, obj.data.info);
-                        else if (obj.data.operation == 'clearAll')
-                            drawingManagement.clearObjects();
-                        break;
-                    case "geolocation":
-                        if (obj.data.operation == 'connected')
-                            geolocationManagement.addMarker(obj.data);
-                        else if (obj.data.operation == 'disconnected')
-                            geolocationManagement.deleteMarker(obj.data);
-                        break;
-                    case "presentation":
-                        presentationManagement.updateSlide(obj.data);
-                        break;
-                }
-            }
-        });
-
-        var methods = {
-            ws: ws,
-            peopleManagement: peopleManagement,
-            messagesManagement: messagesManagement,
-            streamingManagement: streamingManagement,
-            dashvideoManagement: dashvideoManagement,
-            radioManagement: radioManagement,
-            videoManagement: videoManagement,
-            audioManagement: audioManagement,
-            videoconferenceManagement: videoconferenceManagement,
-            drawingManagement: drawingManagement,
-            geolocationManagement: geolocationManagement,
-            presentationManagement: presentationManagement
-        };
-
-        return methods;
     }]);
 function AudioManagement(ws, growl) {
     var muted = false;
@@ -1039,6 +1033,44 @@ function PresentationManagement(ws, growl) {
         }));
     }
 }
+function PresentationMultichatManagement(ws, growl) {
+    var iframe = document.getElementById('iframeMultichat');
+    var reveal;
+    var user;
+
+    iframe.onload = function () {
+        reveal = iframe.contentWindow.Reveal;
+        reveal.addEventListener('slidechanged', updateOthers);
+    };
+
+    function updateOthers(event) {
+        sendData(event.indexh, event.indexv);
+    }
+
+    this.updateSlide = function (data) { //from the outside
+        reveal.removeEventListener('slidechanged', updateOthers);
+        reveal.slide(data.indexh, data.indexv);
+        reveal.addEventListener('slidechanged', updateOthers);
+    };
+
+    this.setUser = function (userName, name) {
+        user = {
+            userName: userName,
+            name: name
+        };
+    };
+
+    function sendData(indexh, indexv) {
+        ws.send(JSON.stringify({
+            'section': 'presentationMultichat',
+            'data': {
+                'indexh': indexh,
+                'indexv': indexv,
+                'userName': user.userName
+            }
+        }));
+    }
+}
 function RadioManagement(ws, growl) {
     var radio = document.getElementById('radioId');
     var source = document.getElementById('radioSource');
@@ -1413,3 +1445,32 @@ function VideoManagement(ws, growl) {
         }));
     }
 }
+function VideoMultichatManagement(ws, growl) {
+    var streaming = document.getElementById('videoMultichatId');
+    var source = document.getElementById('videoMultichatSource');
+
+    source.onerror = function () {
+        growl.error('The URL provided is not a valid video', {
+            title: 'Error'
+        });
+    };
+}
+angular.module('multichatApp')
+    .config(['growlProvider', function (growlProvider) {
+        growlProvider.globalPosition('bottom-right');
+        growlProvider.globalTimeToLive(2000);
+    }]);
+
+angular.module('multichatApp')
+    .config(["dropzoneOpsProvider", function (dropzoneOpsProvider) {
+        dropzoneOpsProvider.setOptions({
+            url: '/',
+            dictDefaultMessage: 'Drop your picture or your file to be attached. ' + 'You can also click here to open the File dialog'
+        });
+    }]);
+
+//to remove the unsafe tag before the URLs when I share files converted with readAsDataURL
+angular.module('multichatApp')
+    .config(['$compileProvider', function ($compileProvider) {
+        $compileProvider.aHrefSanitizationWhitelist(/^\s*(data):/);
+    }]);

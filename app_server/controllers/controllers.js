@@ -208,7 +208,9 @@ var layoutMultichat = {
     radio: 'Radio Shoutcast',
     audio: 'Audio broadcast',
     video: 'Video broadcast',
-    videoconferences: 'Videoconferences'
+    videoconferences: 'Videoconferences',
+    presentationMultichat: 'Presentation Multichat',
+    videoMultichat: "Camtasia Multichat"
 };
 
 module.exports.multichat = function (req, res, next) {
@@ -220,7 +222,9 @@ module.exports.multichat = function (req, res, next) {
             radioUrl: config.radioUrl,
             videoUrl: config.videoUrl,
             audioUrl: config.audioUrl,
-            presentationUrl: config.presentationUrl
+            presentationUrl: config.presentationUrl,
+            presentationMultichatUrl: config.presentationMultichatUrl,
+            videoMultichatUrl: config.videoMultichatUrl
         },
         sub: req.sub,
         layoutCommon: layoutCommon,

@@ -48,6 +48,10 @@ block content-common
                         .panel-heading
                             ul.nav.nav-tabs.nav-justified
                                 li.active
+                                    a(href='#presentationMultichat' data-toggle='tab') #{layoutMultichat.presentationMultichat}
+                                li
+                                    a(href='#videoMultichat' data-toggle='tab') #{layoutMultichat.videoMultichat}
+                                li
                                     a(href='#geolocation' data-toggle='tab') #{layoutMultichat.geolocation}
                                 li
                                     a(href='#drawings' data-toggle='tab') #{layoutMultichat.drawings}
@@ -55,7 +59,11 @@ block content-common
                                     a(href='#presentations' data-toggle='tab') #{layoutMultichat.presentations}
                         .panel-body
                             .tab-content
-                                .tab-pane.fade.in.active#geolocation
+                                .tab-pane.fade.in.active#presentationMultichat
+                                    block presentationMultichat
+                                .tab-pane.fade#videoMultichat
+                                    block videoMultichat
+                                .tab-pane.fade#geolocation
                                     block geolocation
                                 .tab-pane.fade#drawings
                                     block drawings

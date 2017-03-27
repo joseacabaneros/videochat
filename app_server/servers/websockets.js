@@ -99,6 +99,9 @@ module.exports = function (httpsServer) {
                         case 'presentation':
                             broadcast(message, obj.data.userName); //to notify others
                             break;
+                        case 'presentationMultichat':
+                            broadcast(message, obj.data.userName); //to notify others
+                            break;
                         default:
                             console.log('Unrecognized message');
                             break;
